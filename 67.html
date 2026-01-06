@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rhetorische Stilmittel Quiz</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .quiz-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .progress {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .question-box {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border-left: 5px solid #667eea;
+        }
+
+        .question-text {
+            font-size: 1.3em;
+            color: #333;
+            line-height: 1.6;
+            font-style: italic;
+        }
+
+        .options {
+            display: grid;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .option-btn {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 18px 24px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            border-color: #667eea;
+            background: #f0f4ff;
+            transform: translateX(5px);
+        }
+
+        .option-btn:disabled {
+            cursor: not-allowed;
+        }
+
+        .option-btn.correct {
+            background: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+        }
+
+        .option-btn.wrong {
+            background: #f8d7da;
+            border-color: #dc3545;
+            color: #721c24;
+        }
+
+        .feedback {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1.1em;
+            text-align: center;
+        }
+
+        .feedback.correct {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .feedback.wrong {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .next-btn, .restart-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 15px 40px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .next-btn:hover, .restart-btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .result-box {
+            text-align: center;
+        }
+
+        .result-box h2 {
+            color: #667eea;
+            margin-bottom: 30px;
+            font-size: 2em;
+        }
+
+        .score-display {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .score-item {
+            margin: 15px 0;
+            font-size: 1.3em;
+            color: #333;
+        }
+
+        .grade {
+            font-size: 3em;
+            font-weight: bold;
+            color: #667eea;
+            margin: 20px 0;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <div id="quiz-view">
+            <h1>Rhetorische Stilmittel Quiz</h1>
+            <div class="progress" id="progress">Frage 1 / 50</div>
+            
+            <div class="question-box">
+                <div class="question-text" id="question"></div>
+            </div>
+
+            <div class="options" id="options"></div>
+
+            <div id="feedback" class="feedback hidden"></div>
+
+            <button class="next-btn hidden" id="next-btn">Nächste Frage</button>
+        </div>
+
+        <div id="result-view" class="result-box hidden">
+            <h2>Quiz beendet!</h2>
+            <div class="score-display">
+                <div class="score-item">Richtige Antworten: <strong id="correct-count"></strong> / 50</div>
+                <div class="score-item">Prozent: <strong id="percentage"></strong>%</div>
+                <div class="grade" id="grade"></div>
+            </div>
+            <button class="restart-btn" onclick="location.reload()">Neues Quiz starten</button>
+        </div>
+    </div>
+
+    <script>
+        // Datenbank mit allen Stilmitteln und Beispielen
+        const stilmittelData = {
+            "Akkumulation": [
+                "Laterne, Laterne, Sonne, Mond und Sterne.",
+                "Er sammelte Mut, Kraft und Hoffnung.",
+                "Wasser, Brot und Wein waren alles, was er hatte."
+            ],
+            "Alliteration": [
+                "Milch macht müde Männer munter.",
+                "Bei Wind und Wetter wandern wir weiter.",
+                "Fischers Fritz fischt frische Fische."
+            ],
+            "Anapher": [
+                "Er lacht nicht laut, er lacht lieber leise.",
+                "Schön ist das Glück, schön die Liebe.",
+                "Ich sehe den Wald, ich sehe die Berge, ich sehe das Meer."
+            ],
+            "Antithese": [
+                "Gut ist mein Gedanke, böse mein Wille.",
+                "Jung und alt standen nebeneinander.",
+                "Der eine weint, der andere lacht."
+            ],
+            "Chiasmus": [
+                "Ich singe am Morgen, am Abend schweige ich.",
+                "Die Kunst ist lang, und kurz ist unser Leben.",
+                "Er arbeitet um zu leben, nicht lebt um zu arbeiten."
+            ],
+            "Correctio": [
+                "Diese Äpfel haben einen guten, nein, den besten Geschmack.",
+                "Sie war hübsch, oder besser gesagt, wunderschön.",
+                "Das Buch ist interessant, nein, faszinierend!"
+            ],
+            "Diminutiv": [
+                "Ein Männlein steht im Walde.",
+                "Das Häuschen stand einsam auf dem Hügel.",
+                "Ein Vögelchen zwitscherte leise."
+            ],
+            "Ellipse": [
+                "Er nach links, sie nach rechts.",
+                "Erst die Arbeit, dann das Vergnügen.",
+                "Je früher, desto besser."
+            ],
+            "Epipher": [
+                "Deine Augen sind wie Sterne, wie funkelnd leuchtende Sterne!",
+                "Er kämpfte für Freiheit, sie starb für Freiheit.",
+                "Niemand hörte zu, niemand verstand, niemand half."
+            ],
+            "Euphemismus": [
+                "Das Produkt ist preisgünstig.",
+                "Er ist nicht übermäßig intelligent.",
+                "Sie ist von uns gegangen."
+            ],
+            "Hyperbel": [
+                "Ich habe tausend Tränen vergossen.",
+                "Eine Ewigkeit habe ich auf dich gewartet.",
+                "Ich sterbe vor Hunger!"
+            ],
+            "Inversion": [
+                "Glänzend sind deine Augen.",
+                "Groß war die Freude der Menschen.",
+                "Mutig schritt der Krieger voran."
+            ],
+            "Ironie": [
+                "Auf diese Klassenarbeit haben Sie sicher zwei Wochen gelernt.",
+                "Das hast du ja wieder toll hinbekommen!",
+                "Welch eine Überraschung, dass du zu spät kommst."
+            ],
+            "Klimax": [
+                "Ich kam, sah und siegte.",
+                "Er flüsterte, sprach und schrie.",
+                "Gut, besser, am besten!"
+            ],
+            "Litotes": [
+                "Das war nicht schlecht.",
+                "Er ist nicht gerade der Klügste.",
+                "Das Wetter ist nicht unfreundlich."
+            ],
+            "Metapher": [
+                "Jakob ist der Einstein in dieser Klasse.",
+                "Ein Tränenmeer floss über ihre Wangen.",
+                "Er ist ein echter Löwe auf dem Spielfeld."
+            ],
+            "Metonymie": [
+                "Die Schule dankt dem Herrn Bürgermeister.",
+                "Trinken wir noch ein Glas.",
+                "Das weiße Haus hat entschieden."
+            ],
+            "Neologismus": [
+                "Der Sozialtourismus nimmt zu.",
+                "Die Wutbürger protestieren lautstark.",
+                "Im Cyberkrieg gibt es neue Strategien."
+            ],
+            "Onomatopoesie": [
+                "Die Schlange zischte gefährlich.",
+                "Das Wasser plätscherte leise.",
+                "Die Tür knarrte unheimlich."
+            ],
+            "Oxymoron": [
+                "Ihre Hassliebe machte sie verrückt.",
+                "Er war ein geliebter Feind.",
+                "Stummer Schrei der Verzweiflung."
+            ],
+            "Paradoxon": [
+                "Weniger ist mehr.",
+                "Vor lauter Glück könnte er kotzen.",
+                "Die Wunde muss geschlossen bleiben, um zu heilen."
+            ],
+            "Parallelismus": [
+                "Reden ist Silber, Schweigen ist Gold.",
+                "Der eine gibt, der andere nimmt.",
+                "Früher war alles besser, heute ist alles schlechter."
+            ],
+            "Parenthese": [
+                "Ich wollte ihr - sie ahnte es nicht - einen Heiratsantrag machen.",
+                "Der Mann (er war sehr alt) ging langsam.",
+                "Sie kam - endlich! - zur Tür herein."
+            ],
+            "Pars pro Toto": [
+                "Alle wohnen unter einem Dach.",
+                "Pro Kopf kostete es zehn Euro.",
+                "Deutschland gewann das Spiel."
+            ],
+            "Personifikation": [
+                "Mutter Natur zeigt ihre Kraft.",
+                "Die Sonne lacht vom Himmel.",
+                "Der Wind flüsterte durch die Bäume."
+            ],
+            "Pleonasmus": [
+                "Der weiße Schimmel galoppierte davon.",
+                "Der nasse Regen fiel vom Himmel.",
+                "Ich sah es mit meinen eigenen Augen."
+            ],
+            "Polysyndeton": [
+                "Einigkeit und Recht und Freiheit!",
+                "Er kam und sah und hörte und verstand.",
+                "Wir brauchen Mut und Kraft und Hoffnung und Liebe."
+            ],
+            "Repetitio": [
+                "Ach! Ach! Wo bist du?",
+                "Herr, warum quält Ihr mich? Herr, was habe ich getan?",
+                "Nie, nie, niemals werde ich das tun!"
+            ],
+            "Rhetorische Frage": [
+                "Wer kann das schon verstehen?",
+                "Ist das nicht offensichtlich?",
+                "Muss ich das wirklich erklären?"
+            ],
+            "Symbol": [
+                "Die weiße Taube flog über das Schlachtfeld.",
+                "Der Frühling brachte neues Leben.",
+                "Schwarz gekleidet stand sie am Grab."
+            ],
+            "Synästhesie": [
+                "Das schreiende Rot blendete ihre Augen.",
+                "Der süße Klang der Geige erfüllte den Raum.",
+                "Die kalte Stille lastete auf ihnen."
+            ],
+            "Tautologie": [
+                "Voll und ganz stimmte er zu.",
+                "Nie und nimmer würde er das tun.",
+                "In Reih und Glied marschierten sie."
+            ],
+            "Vergleich": [
+                "Achill ist stark wie ein Löwe.",
+                "Sie singt wie ein Engel.",
+                "Er rennt schnell wie der Wind."
+            ]
+        };
+
+        // Globale Variablen
+        let questions = [];
+        let currentQuestion = 0;
+        let score = 0;
+        let answered = false;
+
+        // Fragen generieren
+        function generateQuestions() {
+            const allQuestions = [];
+            
+            for (const [name, examples] of Object.entries(stilmittelData)) {
+                for (const example of examples) {
+                    allQuestions.push({
+                        text: example,
+                        correct: name
+                    });
+                }
+            }
+
+            // Mischen und 50 Fragen auswählen
+            questions = allQuestions.sort(() => Math.random() - 0.5).slice(0, 50);
+        }
+
+        // Zufällige Antwortoptionen generieren
+        function getRandomOptions(correctAnswer) {
+            const allNames = Object.keys(stilmittelData);
+            const options = [correctAnswer];
+            
+            while (options.length < 5) {
+                const random = allNames[Math.floor(Math.random() * allNames.length)];
+                if (!options.includes(random)) {
+                    options.push(random);
+                }
+            }
+            
+            return options.sort(() => Math.random() - 0.5);
+        }
+
+        // Frage anzeigen
+        function displayQuestion() {
+            answered = false;
+            const question = questions[currentQuestion];
+            
+            document.getElementById('progress').textContent = `Frage ${currentQuestion + 1} / 50`;
+            document.getElementById('question').textContent = `"${question.text}"`;
+            
+            const options = getRandomOptions(question.correct);
+            const optionsContainer = document.getElementById('options');
+            optionsContainer.innerHTML = '';
+            
+            options.forEach(option => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = option;
+                btn.onclick = () => checkAnswer(option, question.correct, btn);
+                optionsContainer.appendChild(btn);
+            });
+            
+            document.getElementById('feedback').classList.add('hidden');
+            document.getElementById('next-btn').classList.add('hidden');
+        }
+
+        // Antwort überprüfen
+        function checkAnswer(selected, correct, btn) {
+            if (answered) return;
+            answered = true;
+            
+            const allButtons = document.querySelectorAll('.option-btn');
+            allButtons.forEach(b => b.disabled = true);
+            
+            const feedback = document.getElementById('feedback');
+            feedback.classList.remove('hidden');
+            
+            if (selected === correct) {
+                btn.classList.add('correct');
+                feedback.className = 'feedback correct';
+                feedback.textContent = '✅ Richtig!';
+                score++;
+            } else {
+                btn.classList.add('wrong');
+                allButtons.forEach(b => {
+                    if (b.textContent === correct) {
+                        b.classList.add('correct');
+                    }
+                });
+                feedback.className = 'feedback wrong';
+                feedback.textContent = `❌ Falsch! Die richtige Antwort ist: ${correct}`;
+            }
+            
+            document.getElementById('next-btn').classList.remove('hidden');
+        }
+
+        // Nächste Frage
+        function nextQuestion() {
+            currentQuestion++;
+            
+            if (currentQuestion < 50) {
+                displayQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        // Ergebnisse anzeigen
+        function showResults() {
+            document.getElementById('quiz-view').classList.add('hidden');
+            document.getElementById('result-view').classList.remove('hidden');
+            
+            const percentage = Math.round((score / 50) * 100);
+            let grade;
+            
+            if (percentage >= 90) grade = '1 (Sehr gut)';
+            else if (percentage >= 80) grade = '2 (Gut)';
+            else if (percentage >= 65) grade = '3 (Befriedigend)';
+            else if (percentage >= 50) grade = '4 (Ausreichend)';
+            else if (percentage >= 30) grade = '5 (Mangelhaft)';
+            else grade = '6 (Ungenügend)';
+            
+            document.getElementById('correct-count').textContent = score;
+            document.getElementById('percentage').textContent = percentage;
+            document.getElementById('grade').textContent = grade;
+        }
+
+        // Quiz initialisieren
+        generateQuestions();
+        displayQuestion();
+        document.getElementById('next-btn').onclick = nextQuestion;
+    </script>
+</body>
+</html>
